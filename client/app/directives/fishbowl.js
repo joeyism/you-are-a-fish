@@ -2,7 +2,7 @@
 
 'use strict';
 
-angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($compile){
+angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',function($compile,$interval){
 
     return {
         restrict: 'A',
@@ -19,17 +19,16 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($comp
                     node.y = Math.random() * 200 + 20;
                 }
             }
-
             var mySvg = d3.select(element[0])
             .append("svg")
             .attr("width", 250)
             .attr("height", 250);
 
-            mySvg.selectAll("image")
+            var fishes = mySvg.selectAll("image")
             .data(scope.nodes)
             .enter()
             .append("svg:image")
-            .attr("xlink:href",function(d){console.info(d.image); return d.image;})
+            .attr("xlink:href",function(d){return d.image;})
             .attr("x", function(d,i){return d.x;})
             .attr("y", function(d,i){return d.y;})
             .attr("width", 100)
@@ -41,6 +40,15 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($comp
             .call(function(){
                 $compile(this[0].parentNode)(scope);
             });
+           
+                    
+            
+            scope.moveFishes= function() {
+                fishes.attr("x", function(d) { d.x+= 1; return d.x; })
+                .attr("y", function(d) { d.y+=1; return d.y; });
+            };
+            
+           $interval(scope.moveFishes(), 30); 
 
 
 
