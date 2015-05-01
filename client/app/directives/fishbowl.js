@@ -9,8 +9,8 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($comp
         templateUrl: 'app/tpl/fishbowl-tpl.html',
         link: function(scope,element){
             scope.nodes = [
-                {"name": "foo", x: 50, y: 50},
-                {"name": "bar", x: 100, y: 100}
+                {"name": "foo", x: 50, y: 50, image:'/assets/images/fishes/fish_1.png'},
+                {"name": "bar", x: 100, y: 100, image:'/assets/images/fishes/fish_1.png'}
             ];
             scope.moveDots = function(){
                 for(var n = 0; n < $scope.nodes.length; n++){
@@ -25,10 +25,15 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($comp
             .attr("width", 250)
             .attr("height", 250);
 
-            mySvg.selectAll("circle")
+            mySvg.selectAll("image")
             .data(scope.nodes)
             .enter()
-            .append("circle")
+            .append("svg:image")
+            .attr("xlink:href",function(d){console.info(d.image); return d.image;})
+            .attr("x", function(d,i){return d.x;})
+            .attr("y", function(d,i){return d.y;})
+            .attr("width", 100)
+            .attr("height",100)
             .attr("tooltip-append-to-body", true)
             .attr("tooltip", function(d){
                 return d.name;
@@ -36,14 +41,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile',function($comp
             .call(function(){
                 $compile(this[0].parentNode)(scope);
             });
-            mySvg.selectAll("circle")
-            .attr("cx", function(d,i){
-                return d.x;
-            })
-            .attr("cy", function(d,i){
-                return d.y;
-            })
-            .attr("r", 10);
 
 
 
