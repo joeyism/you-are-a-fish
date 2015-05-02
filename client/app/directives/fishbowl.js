@@ -8,6 +8,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
         restrict: 'A',
         templateUrl: 'app/tpl/fishbowl-tpl.html',
         link: function(scope,element){
+
             var maxVelocity = 5,
                 fishes=[],
                 noOfFishes = 8,
@@ -15,6 +16,8 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 tankHeight =570,
                 width = tankWidth - 100,
                 height= tankHeight - 80;
+
+            var socket = io();
 
             var randomWithCeil = function(num){
                 return Math.ceil(Math.random()*num);
@@ -111,7 +114,14 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 scope.moveFishes();
             }, intervalPeriod);
 
+            scope.submit = function(){
+                console.info(scope.msg);
+                socket.emit('chat message',scope.msg);
+            };
 
+            socket.on('chat message', function(msg){
+                console.info(msg); 
+            });
         }
     };
 
