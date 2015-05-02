@@ -40,16 +40,20 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             .call(function(){
                 $compile(this[0].parentNode)(scope);
             });
-           
-                    
-            
+
+
+
             scope.moveFishes= function() {
                 fishes.attr("x", function(d) { d.x+= 1; return d.x; })
                 .attr("y", function(d) { d.y+=1; return d.y; });
             };
-            
-           $interval(scope.moveFishes(), 30); 
 
+            $interval(scope.moveFishes(), 30); 
+            var textAnim;
+            var intervalPeriod = 100;
+            textAnim = $interval(function (index) {
+                    scope.moveFishes();
+            }, intervalPeriod);
 
 
         }
