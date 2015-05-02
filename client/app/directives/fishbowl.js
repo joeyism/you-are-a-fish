@@ -22,6 +22,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
 
             var socket = io();
 
+
             var randomWithCeil = function(num){
                 return Math.ceil(Math.random()*num);
             };
@@ -120,20 +121,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 socket.emit('chat message',scope.msg);
             };
 
-            // fishes
-            textAnim = $interval(function (index) {
-                moveFishes();
-            }, intervalPeriod);
-            for (var i = 0; i < noOfFishes+1; i++){
-                addNewFish();
-            } 
-            showFishes();
-
-            // chatting
-            socket.on('chat message', function(msg){
-                console.info(msg); 
-            });
-
             scope.addNewFish = function(){
                 fishNodes.remove();
                 addNewFish();
@@ -143,6 +130,30 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     moveFishes();
                 }, intervalPeriod);
             };
+
+            // chatting
+            socket.on('chat message', function(msg){
+                console.info(msg); 
+            });
+
+            socket.on('connectme', function(response){
+                var ip = JSON.parse(response).ip;
+                var length = JSON.parse(response).length;
+                console.info(ip,length);
+                noOfFishes = length;
+                while (fishes.length < length){
+                    scope.addNewFish();
+                }
+            });
+
+            // fishes
+            textAnim = $interval(function (index) {
+                moveFishes();
+            }, intervalPeriod);
+            //for (var i = 0; i < noOfFishes+1; i++){
+                addNewFish();
+            //} 
+            showFishes();
 
         }
     };

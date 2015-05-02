@@ -18,10 +18,18 @@ var io = require('socket.io')(server);
 require('./config/express')(app);
 require('./routes')(app);
 
+var users = [];
+
 io.on('connection', function(socket){
-    console.log(socket.handshake.headers.host+' has connected');
+    var ip = socket.request.connection.remoteAddress;
+    users.push(ip);
+
+    console.log(ip +' has connected');
+    
+    io.emit('connectme', JSON.stringify({ip: ip, length:users.length}));
+
     socket.on('disconnect',function(){
-        console.log(socket.handshake.headers.host+' has disconnected');
+        console.log(ip +' has disconnected');
     });
 
     socket.on('chat message',function(msg){
@@ -32,7 +40,7 @@ io.on('connection', function(socket){
 
 // Start server
 server.listen(config.port, config.ip, function () {
-  console.log('Express server listening on %d, in %s mode', config.port, app.get('env'));
+    console.log('Express server listening on %d, in %s mode', config.port, app.get('env'));
 });
 
 // Expose app
