@@ -8,13 +8,13 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
         restrict: 'A',
         templateUrl: 'app/tpl/fishbowl-tpl.html',
         link: function(scope,element){
-            var width = 512,
-                height= 285,
-                maxVelocity = 5,
+            var maxVelocity = 5,
                 fishes=[],
-                noOfFishes = 5,
-                tankWidth = width+80,
-                tankHeight =height+80;
+                noOfFishes = 8,
+                tankWidth = 1024,
+                tankHeight =570,
+                width = tankWidth - 100,
+                height= tankHeight - 80;
 
             var randomWithCeil = function(num){
                 return Math.ceil(Math.random()*num);
