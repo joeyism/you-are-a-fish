@@ -15,6 +15,24 @@
     padding: 0.2em 0;
 }
 
+.image-flip{
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-filter: "FlipH"; 
+}
+
+.image-org{
+    -moz-transform: scaleX(1);
+    -o-transform: scaleX(1);
+    -webkit-transform: scaleX(1);
+    transform: scaleX(1);
+    filter: FlipH;
+    -ms-filter: "FlipH"; 
+}
+
 // injector
 @import 'main/main.less';
 @import 'modal/modal.less';

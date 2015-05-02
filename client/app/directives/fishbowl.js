@@ -8,31 +8,68 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
         restrict: 'A',
         templateUrl: 'app/tpl/fishbowl-tpl.html',
         link: function(scope,element){
-            scope.nodes = [
-                {"name": "foo", x: 50, y: 50, image:'/assets/images/fishes/fish_1.png'},
-                {"name": "bar", x: 100, y: 100, image:'/assets/images/fishes/fish_1.png'}
-            ];
-            scope.moveDots = function(){
-                for(var n = 0; n < $scope.nodes.length; n++){
-                    var node = $scope.nodes[n];
-                    node.x = Math.random() * 200 + 20;
-                    node.y = Math.random() * 200 + 20;
-                }
-            }
-            var mySvg = d3.select(element[0])
-            .append("svg")
-            .attr("width", 250)
-            .attr("height", 250);
+            var width = 512,
+                height= 285,
+                maxVelocity = 5,
+                fishes=[],
+                noOfFishes = 5,
+                tankWidth = width+80,
+                tankHeight =height+80;
 
-            var fishes = mySvg.selectAll("image")
-            .data(scope.nodes)
+            var randomWithCeil = function(num){
+                return Math.ceil(Math.random()*num);
+            };
+
+
+            var fish = function(){
+                var fishPicNo = randomWithCeil(3);
+                this.image = '/assets/images/fishes/fish_' + fishPicNo + '.png';
+                this.imageFlip = '/assets/images/fishes/fish_' + fishPicNo + '_flipped.png';
+
+                this.y = randomWithCeil(height);
+                this.x = randomWithCeil(width);
+
+                this.vx = randomWithCeil(maxVelocity);
+                this.vy = randomWithCeil(maxVelocity);
+                this.v = this.vy/this.vx;
+
+                this.msg = "";
+            };
+
+
+            for (var i = 0; i < noOfFishes+1; i++){
+                var thisFish = new fish();
+                fishes.push({
+                    msg: thisFish.msg,
+                    x: thisFish.x,
+                    y: thisFish.y,
+                    vx: thisFish.vx,
+                    vy: thisFish.vy,
+                    v: thisFish.v,
+                    image: thisFish.image,
+                    imageFlip: thisFish.imageFlip
+                });
+            } 
+
+            var mySvg = d3.select('#fishbowl')
+            .append("svg")
+            .attr("width", tankWidth)
+            .attr("height", tankHeight);
+
+            mySvg.append("image")
+            .attr("xlink:href","/assets/images/fishtank.jpg")
+            .attr("width","100%")
+            .attr("height","100%");
+
+            var fishNodes = mySvg.selectAll("image")
+            .data(fishes)
             .enter()
             .append("svg:image")
-            .attr("xlink:href",function(d){return d.image;})
+            .attr("xlink:href",function(d){return d.imageFlip;})
             .attr("x", function(d,i){return d.x;})
             .attr("y", function(d,i){return d.y;})
-            .attr("width", 100)
-            .attr("height",100)
+            .attr("width", "10%")
+            .attr("height","10%")
             .attr("tooltip-append-to-body", true)
             .attr("tooltip", function(d){
                 return d.name;
@@ -44,15 +81,34 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
 
 
             scope.moveFishes= function() {
-                fishes.attr("x", function(d) { d.x+= 1; return d.x; })
-                .attr("y", function(d) { d.y+=1; return d.y; });
+                fishNodes.attr("x", function(d) { 
+                    if (d.x >= width || d.x <= 0){
+                        d.vx = -d.vx;
+                    }
+                    d.x+= d.vx; 
+                    return d.x; 
+                })
+                .attr("y", function(d) { 
+                    if (d.y >= height || d.y <= 0){
+                        d.vy = -d.vy;
+                    }
+                    d.y+=d.vy; 
+                    return d.y; 
+                })
+                .attr("xlink:href",function(d){
+                    if (d.vx > 0){
+                        return d.imageFlip;
+                    } else {
+                        return d.image;
+                    };
+                });
             };
 
             $interval(scope.moveFishes(), 30); 
             var textAnim;
             var intervalPeriod = 100;
             textAnim = $interval(function (index) {
-                    scope.moveFishes();
+                scope.moveFishes();
             }, intervalPeriod);
 
 
