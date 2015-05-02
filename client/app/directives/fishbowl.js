@@ -15,14 +15,16 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 tankWidth = 1024,
                 tankHeight =570,
                 width = tankWidth - 100,
-                height= tankHeight - 80;
+                height= tankHeight - 80,
+                fishNodes,
+            textAnim,
+            intervalPeriod = 100;
 
             var socket = io();
 
             var randomWithCeil = function(num){
                 return Math.ceil(Math.random()*num);
             };
-
 
             var fish = function(){
                 var fishPicNo = randomWithCeil(3);
@@ -39,8 +41,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 this.msg = "";
             };
 
-
-            for (var i = 0; i < noOfFishes+1; i++){
+            var addNewFish = function(){
                 var thisFish = new fish();
                 fishes.push({
                     msg: thisFish.msg,
@@ -52,38 +53,45 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     image: thisFish.image,
                     imageFlip: thisFish.imageFlip
                 });
-            } 
+            };
+
+            var tip = d3.tip()
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+                return "<strong>Frequency:</strong> <span style='color:red'>" + d.msg+"rawr" + "</span>";
+            });
 
             var mySvg = d3.select('#fishbowl')
             .append("svg")
             .attr("width", tankWidth)
             .attr("height", tankHeight);
 
+            mySvg.call(tip);
+
             mySvg.append("image")
             .attr("xlink:href","/assets/images/fishtank.jpg")
             .attr("width","100%")
             .attr("height","100%");
 
-            var fishNodes = mySvg.selectAll("image")
-            .data(fishes)
-            .enter()
-            .append("svg:image")
-            .attr("xlink:href",function(d){return d.imageFlip;})
-            .attr("x", function(d,i){return d.x;})
-            .attr("y", function(d,i){return d.y;})
-            .attr("width", "10%")
-            .attr("height","10%")
-            .attr("tooltip-append-to-body", true)
-            .attr("tooltip", function(d){
-                return d.name;
-            })
-            .call(function(){
-                $compile(this[0].parentNode)(scope);
-            });
+            var showFishes = function(){
+                fishNodes = mySvg.selectAll("image")
+                .data(fishes)
+                .enter()
+                .append("svg:image")
+                .attr("xlink:href",function(d){return d.imageFlip;})
+                .attr("x", function(d,i){return d.x;})
+                .attr("y", function(d,i){return d.y;})
+                .attr("width", "10%")
+                .attr("height","10%")
+                .on('mouseover', tip.show)
+                .on('mouseout', tip.hide)
+                .call(function(){
+                    $compile(this[0].parentNode)(scope);
+                });
+            }
 
-
-
-            scope.moveFishes= function() {
+            var moveFishes= function() {
                 fishNodes.attr("x", function(d) { 
                     if (d.x >= width || d.x <= 0){
                         d.vx = -d.vx;
@@ -107,21 +115,35 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 });
             };
 
-            $interval(scope.moveFishes(), 30); 
-            var textAnim;
-            var intervalPeriod = 100;
-            textAnim = $interval(function (index) {
-                scope.moveFishes();
-            }, intervalPeriod);
-
             scope.submit = function(){
                 console.info(scope.msg);
                 socket.emit('chat message',scope.msg);
             };
 
+            // fishes
+            textAnim = $interval(function (index) {
+                moveFishes();
+            }, intervalPeriod);
+            for (var i = 0; i < noOfFishes+1; i++){
+                addNewFish();
+            } 
+            showFishes();
+
+            // chatting
             socket.on('chat message', function(msg){
                 console.info(msg); 
             });
+
+            scope.addNewFish = function(){
+                fishNodes.remove();
+                addNewFish();
+                $interval.cancel(textAnim);
+                showFishes();
+                textAnim = $interval(function (index) {
+                    moveFishes();
+                }, intervalPeriod);
+            };
+
         }
     };
 
