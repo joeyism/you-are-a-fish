@@ -40,9 +40,10 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 this.v = this.vy/this.vx;
 
                 this.msg = "";
+                this.user = "";
             };
 
-            var addNewFish = function(){
+            var addNewFish = function(user){
                 var thisFish = new fish();
                 fishes.push({
                     msg: thisFish.msg,
@@ -52,7 +53,8 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     vy: thisFish.vy,
                     v: thisFish.v,
                     image: thisFish.image,
-                    imageFlip: thisFish.imageFlip
+                    imageFlip: thisFish.imageFlip,
+                    user: user
                 });
             };
 
@@ -121,9 +123,26 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 socket.emit('chat message',scope.msg);
             };
 
-            scope.addNewFish = function(){
+            scope.appendFish = function(user){
                 fishNodes.remove();
-                addNewFish();
+                addNewFish(user);
+                $interval.cancel(textAnim);
+                showFishes();
+                textAnim = $interval(function (index) {
+                    moveFishes();
+                }, intervalPeriod);
+            };
+
+            scope.removeFish = function(user){
+                var removed = false;
+                fishNodes.remove();
+                console.info(fishes);
+                fishes.forEach(function(fish,i){
+                    if (fish.user === user && !removed){
+                        fishes.splice(i,1);    
+                        removed = true;
+                    }
+                });
                 $interval.cancel(textAnim);
                 showFishes();
                 textAnim = $interval(function (index) {
@@ -141,9 +160,14 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 var length = JSON.parse(response).length;
                 console.info(ip,length);
                 noOfFishes = length;
-                while (fishes.length < length){
-                    scope.addNewFish();
+                while (fishes.length < length+1){
+                    scope.appendFish(ip);
                 }
+            });
+
+            socket.on('disconnectme',function(user){
+                console.info(user);
+                scope.removeFish(user);
             });
 
             // fishes
@@ -151,7 +175,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 moveFishes();
             }, intervalPeriod);
             //for (var i = 0; i < noOfFishes+1; i++){
-                addNewFish();
+            addNewFish();
             //} 
             showFishes();
 

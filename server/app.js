@@ -13,7 +13,7 @@ var config = require('./config/environment');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-
+var base64 = require('base64');
 
 require('./config/express')(app);
 require('./routes')(app);
@@ -22,13 +22,20 @@ var users = [];
 
 io.on('connection', function(socket){
     var ip = socket.request.connection.remoteAddress;
+    var ipEncode = base64.encode(ip);
     users.push(ip);
 
-    console.log(ip +' has connected');
-    
-    io.emit('connectme', JSON.stringify({ip: ip, length:users.length}));
+    console.log(ip +' has connected. The total number of users is '+users.length);
+
+    io.emit('connectme', JSON.stringify({ip: ipEncode, length:users.length}));
 
     socket.on('disconnect',function(){
+        users.forEach(function(user,i){
+            if (user === ip){
+                users.splice(ip,1);
+            }
+        });
+        io.emit('disconnectme', ipEncode);
         console.log(ip +' has disconnected');
     });
 
