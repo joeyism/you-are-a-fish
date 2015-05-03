@@ -27,7 +27,7 @@ io.on('connection', function(socket){
 
     console.log(ip +' has connected. The total number of users is '+users.length);
 
-    io.emit('connectme', JSON.stringify({ip: ipEncode, length:users.length}));
+    io.emit('connectme', JSON.stringify({user: ipEncode, length:users.length}));
 
     socket.on('disconnect',function(){
         users.forEach(function(user,i){
@@ -40,7 +40,8 @@ io.on('connection', function(socket){
     });
 
     socket.on('chat message',function(msg){
-        io.emit('chat message', msg);
+        io.emit('chat message', JSON.stringify({msg:msg, user: ipEncode  }));
+        console.log('Chat message sent by '+ip);
     });
 });
 

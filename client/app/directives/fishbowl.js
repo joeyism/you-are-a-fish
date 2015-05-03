@@ -27,6 +27,14 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 return Math.ceil(Math.random()*num);
             };
 
+            var imageFlipper = function(d){
+                if (d.vx > 0){
+                    return d.imageFlip;
+                } else {
+                    return d.image;
+                };
+            }; 
+            
             var fish = function(){
                 var fishPicNo = randomWithCeil(3);
                 this.image = '/assets/images/fishes/fish_' + fishPicNo + '.png';
@@ -62,8 +70,9 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             .attr('class', 'd3-tip')
             .offset([-10, 0])
             .html(function(d) {
-                return "<strong>Frequency:</strong> <span style='color:red'>" + d.msg+"rawr" + "</span>";
-            });
+                return "<p class='triangle-right'>" + d.msg+"</p>";
+            })
+            .style('left',function(d){console.info(d);});
 
             var mySvg = d3.select('#fishbowl')
             .append("svg")
@@ -82,7 +91,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 .data(fishes)
                 .enter()
                 .append("svg:image")
-                .attr("xlink:href",function(d){return d.imageFlip;})
+                .attr("xlink:href",function(d){return imageFlipper(d);})
                 .attr("x", function(d,i){return d.x;})
                 .attr("y", function(d,i){return d.y;})
                 .attr("width", "10%")
@@ -110,11 +119,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     return d.y; 
                 })
                 .attr("xlink:href",function(d){
-                    if (d.vx > 0){
-                        return d.imageFlip;
-                    } else {
-                        return d.image;
-                    };
+                    return imageFlipper(d);
                 });
             };
 
@@ -123,9 +128,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 socket.emit('chat message',scope.msg);
             };
 
-            scope.appendFish = function(user){
-                fishNodes.remove();
-                addNewFish(user);
+            scope.refreshFish = function(){
                 $interval.cancel(textAnim);
                 showFishes();
                 textAnim = $interval(function (index) {
@@ -133,35 +136,43 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 }, intervalPeriod);
             };
 
+            scope.appendFish = function(user){
+                fishNodes.remove();
+                addNewFish(user);
+                scope.refreshFish();
+            };
+
             scope.removeFish = function(user){
                 var removed = false;
                 fishNodes.remove();
-                console.info(fishes);
                 fishes.forEach(function(fish,i){
                     if (fish.user === user && !removed){
                         fishes.splice(i,1);    
                         removed = true;
                     }
                 });
-                $interval.cancel(textAnim);
-                showFishes();
-                textAnim = $interval(function (index) {
-                    moveFishes();
-                }, intervalPeriod);
+                console.info(fishes);
+                scope.refreshFish();
             };
 
             // chatting
-            socket.on('chat message', function(msg){
-                console.info(msg); 
+            socket.on('chat message', function(response){
+                var responseObj = JSON.parse(response);
+                fishes.forEach(function(fish, i){
+                    if (fish.user === responseObj.user){
+                        fishes[i].msg = responseObj.msg;
+                    }
+                });
+                console.info(responseObj); 
             });
 
             socket.on('connectme', function(response){
-                var ip = JSON.parse(response).ip;
+                var user = JSON.parse(response).user;
                 var length = JSON.parse(response).length;
-                console.info(ip,length);
+                console.info(user,length);
                 noOfFishes = length;
                 while (fishes.length < length+1){
-                    scope.appendFish(ip);
+                    scope.appendFish(user);
                 }
             });
 
@@ -174,9 +185,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             textAnim = $interval(function (index) {
                 moveFishes();
             }, intervalPeriod);
-            //for (var i = 0; i < noOfFishes+1; i++){
             addNewFish();
-            //} 
             showFishes();
 
         }
