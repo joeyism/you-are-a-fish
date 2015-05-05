@@ -9,7 +9,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
         templateUrl: 'app/tpl/fishbowl-tpl.html',
         link: function(scope,element){
 
-            var maxVelocity = 5,
+            var maxVelocity = 0.001,
                 fishes=[],
                 noOfFishes = 8,
                 tankWidth = 1024,
@@ -18,7 +18,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 height= tankHeight - 80,
                 fishNodes,
             textAnim,
-            intervalPeriod = 100;
+            intervalPeriod = 50;
 
             var socket = io();
 
@@ -126,6 +126,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             scope.submit = function(){
                 console.info(scope.msg);
                 socket.emit('chat message',scope.msg);
+                scope.msg = "";
             };
 
             scope.refreshFish = function(){
@@ -162,7 +163,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     if (fish.user === responseObj.user){
                         fishes[i].msg = responseObj.msg;
                         var thisFish = fishes[i];
-                        var messageShow = $interval(function(){tip.show(thisFish, document.getElementById(thisFish.user));},100);
+                        var messageShow = $interval(function(){tip.show(thisFish, document.getElementById(thisFish.user));}, intervalPeriod);
                     }
                 });
             });

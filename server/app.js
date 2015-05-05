@@ -36,7 +36,7 @@ io.on('connection', function(socket){
             }
         });
         io.emit('disconnectme', ipEncode);
-        console.log(ip +' has disconnected');
+        console.log(ip +' has disconnected. The total number of users is '+users.length);
     });
 
     socket.on('chat message',function(msg){
