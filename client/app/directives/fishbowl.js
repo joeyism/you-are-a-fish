@@ -34,7 +34,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                     return d.image;
                 };
             }; 
-            
+
             var fish = function(){
                 var fishPicNo = randomWithCeil(3);
                 this.image = '/assets/images/fishes/fish_' + fishPicNo + '.png';
@@ -71,8 +71,7 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             .offset([-10, 0])
             .html(function(d) {
                 return "<p class='triangle-right'>" + d.msg+"</p>";
-            })
-            .style('left',function(d){console.info(d);});
+            });
 
             var mySvg = d3.select('#fishbowl')
             .append("svg")
@@ -91,13 +90,14 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 .data(fishes)
                 .enter()
                 .append("svg:image")
+                .attr("id",function(d){return d.user; })
                 .attr("xlink:href",function(d){return imageFlipper(d);})
                 .attr("x", function(d,i){return d.x;})
                 .attr("y", function(d,i){return d.y;})
                 .attr("width", "10%")
                 .attr("height","10%")
-                .on('mouseover', tip.show)
-                .on('mouseout', tip.hide)
+                //.on('mouseover', tip.show)
+                //.on('mouseout', tip.hide)
                 .call(function(){
                     $compile(this[0].parentNode)(scope);
                 });
@@ -161,9 +161,10 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
                 fishes.forEach(function(fish, i){
                     if (fish.user === responseObj.user){
                         fishes[i].msg = responseObj.msg;
+                        var thisFish = fishes[i];
+                        var messageShow = $interval(function(){tip.show(thisFish, document.getElementById(thisFish.user));},100);
                     }
                 });
-                console.info(responseObj); 
             });
 
             socket.on('connectme', function(response){

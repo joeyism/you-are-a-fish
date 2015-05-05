@@ -1,6 +1,17 @@
+<script>
+document.onkeydown=function(evt){
+    var keyCode = evt ? (evt.which ? evt.which : evt.keyCode) : event.keyCode;
+    if(keyCode == 13)
+    {
+        document.getElementById("submitBtn").click();
+    }
+}
+</script>
+
 <div id="fishbowl">
 
 </div>
-<input type="text" id="messageBox" ng-model="msg"></input> <button type="button" ng-click="submit()">Submit</button>
-<button type="button" ng-click="appendFish()">Add Fish</button>
-<button type="button" ng-click="removeFish()">Remove Fish</button>
+<div class="center">
+    <input type="text" id="messageBox" ng-model="msg" class="fishtankTxt" autofocus></input>
+    <input id="submitBtn" type="button" ng-click="submit()" class="fishtankBtn" value="Submit"></input>
+</div>
