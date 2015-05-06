@@ -124,7 +124,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             };
 
             scope.submit = function(){
-                console.info(scope.msg);
                 socket.emit('chat message',scope.msg);
                 scope.msg = "";
             };
@@ -132,27 +131,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             scope.refreshFish = function(){
                 $interval.cancel(textAnim);
                 showFishes();
-                textAnim = $interval(function (index) {
-                    moveFishes();
-                }, intervalPeriod);
-            };
-
-            scope.appendFish = function(user){
-                fishNodes.remove();
-                addNewFish(user);
-                scope.refreshFish();
-            };
-
-            scope.removeFish = function(user){
-                var removed = false;
-                fishNodes.remove();
-                fishes.forEach(function(fish,i){
-                    if (fish.user === user && !removed){
-                        fishes.splice(i,1);    
-                        removed = true;
-                    }
-                });
-                console.info(fishes);
                 scope.refreshFish();
             };
 
@@ -171,7 +149,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             socket.on('connectme', function(response){
                 var user = JSON.parse(response).user;
                 var length = JSON.parse(response).length;
-                console.info(user,length);
                 noOfFishes = length;
                 while (fishes.length < length+1){
                     scope.appendFish(user);
@@ -179,7 +156,6 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             });
 
             socket.on('disconnectme',function(user){
-                console.info(user);
                 scope.removeFish(user);
             });
 
