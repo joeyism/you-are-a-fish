@@ -13,7 +13,24 @@ var config = require('./config/environment');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
-var base64 = require('base64');
+var base64 = {
+    encode: function(str){
+        if (str){
+            console.info(str);
+            var buffer = new Buffer(str);
+            buffer = buffer.toString('base64');
+            return buffer;
+        }
+    },
+    decode: function(encoded){
+        if (encoded){
+            var buffer = new Buffer(encoded, 'base64');
+            buffer = buffer.toString('ascii');
+            return buffer;
+        }
+    }
+};
+
 
 require('./config/express')(app);
 require('./routes')(app);
@@ -21,7 +38,7 @@ require('./routes')(app);
 var users = [];
 
 io.on('connection', function(socket){
-    var ip = socket.request.connection.remoteAddress;
+    var ip = socket.request.connection.remoteAddress || socket.handshake.headers['x-forwarded-for'];
     var ipEncode = base64.encode(ip);
     users.push(ip);
 
