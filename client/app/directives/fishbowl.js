@@ -131,6 +131,27 @@ angular.module('youAreAFishApp').directive('fishbowl',['$compile','$interval',fu
             scope.refreshFish = function(){
                 $interval.cancel(textAnim);
                 showFishes();
+                textAnim = $interval(function (index) {
+                    moveFishes();
+                }, intervalPeriod);
+            };
+
+            scope.appendFish = function(user){
+                fishNodes.remove();
+                addNewFish(user);
+                scope.refreshFish();
+            };
+
+            scope.removeFish = function(user){
+                var removed = false;
+                fishNodes.remove();
+                fishes.forEach(function(fish,i){
+                    if (fish.user === user && !removed){
+                        fishes.splice(i,1);    
+                        removed = true;
+                    }
+                });
+                console.info(fishes);
                 scope.refreshFish();
             };
 
